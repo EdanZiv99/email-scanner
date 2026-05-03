@@ -42,11 +42,26 @@ function extractEmailData(e) {
     ? rawContent.substring(0, headerSeparatorIndex)
     : rawContent;  // fallback: if no separator found, use entire content
 
+  let htmlBody = '';
+  let textBody = '';
+  try {
+    htmlBody = message.getBody();
+  } catch (e) {
+    console.warn('Could not retrieve HTML body:', e);
+  }
+  try {
+    textBody = message.getPlainBody();
+  } catch (e) {
+    console.warn('Could not retrieve plain text body:', e);
+  }
+
   return {
     from: message.getFrom(),
     subject: message.getSubject(),
     messageId: messageId,
     rawHeaders: rawHeaders,
+    htmlBody: htmlBody,
+    textBody: textBody,
   };
 }
 

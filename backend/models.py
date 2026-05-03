@@ -10,6 +10,8 @@ class Email:
     subject: str
     message_id: str
     raw_headers: str  # full RFC822 header block as a single string
+    html_body: str = ""
+    text_body: str = ""
 
     @property
     def headers_dict(self) -> dict:

@@ -39,6 +39,8 @@ def scan():
         subject=data["subject"],
         message_id=data["messageId"],
         raw_headers=data["rawHeaders"],
+        html_body=data.get("htmlBody", ""),
+        text_body=data.get("textBody", ""),
     )
 
     app.logger.info(

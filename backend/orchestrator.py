@@ -4,6 +4,7 @@ from models import Email, SignalResult
 from signals.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
 from signals.dmarc import DmarcSignal
 from signals.lookalike_domain import LookalikeDomainSignal
+from signals.url_href_mismatch import UrlHrefMismatchSignal
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ _SIGNALS = [
     DisplayNameEmailSpoofSignal(),
     DisplayNameBrandImpersonationSignal(),
     LookalikeDomainSignal(),
+    UrlHrefMismatchSignal(),
 ]
 
 
