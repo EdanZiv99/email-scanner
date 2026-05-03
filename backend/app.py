@@ -2,24 +2,9 @@ from flask import Flask, request, jsonify
 
 from models import Email
 from orchestrator import run_signals
+from scoring import score_email
 
 app = Flask(__name__)
-
-
-# Verdict thresholds based on the spec's 4-tier model
-VERDICT_THRESHOLDS = [
-    (70, "Malicious"),
-    (30, "High Risk"),
-    (10, "Suspicious"),
-]
-
-
-def _verdict(score: int) -> str:
-    """Map a score to a verdict tier per the spec."""
-    for threshold, verdict in VERDICT_THRESHOLDS:
-        if score >= threshold:
-            return verdict
-    return "Safe"
 
 
 @app.route("/scan", methods=["POST"])
@@ -56,21 +41,10 @@ def scan():
 
     results = run_signals(email)
 
-    score = sum(r.weight for r in results if r.triggered)
-    verdict = _verdict(score)
+    scored = score_email(results)
 
     return jsonify({
-        "score": score,
-        "verdict": verdict,
-        "signals": [
-            {
-                "name": r.signal_name,
-                "triggered": r.triggered,
-                "explanation": r.explanation,
-                "weight": r.weight,
-            }
-            for r in results
-        ],
+        **scored,
         "echo": {
             "from": email.from_address,
             "subject": email.subject,
