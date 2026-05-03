@@ -14,6 +14,10 @@ class Email:
     @property
     def headers_dict(self) -> dict:
         """Parse raw_headers into a lowercase-keyed dict using stdlib."""
+        # Append empty body terminator if not already present
+        text = self.raw_headers
+        if not text.endswith("\r\n\r\n") and not text.endswith("\n\n"):
+            text = text + "\r\n\r\n"
         msg = email_lib.message_from_string(self.raw_headers)
         return {k.lower(): v for k, v in msg.items()}
 

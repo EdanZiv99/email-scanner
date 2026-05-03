@@ -36,10 +36,17 @@ function extractEmailData(e) {
 
   const message = GmailApp.getMessageById(messageId);
 
+  const rawContent = message.getRawContent();
+  const headerSeparatorIndex = rawContent.indexOf('\r\n\r\n');
+  const rawHeaders = headerSeparatorIndex !== -1
+    ? rawContent.substring(0, headerSeparatorIndex)
+    : rawContent;  // fallback: if no separator found, use entire content
+
   return {
     from: message.getFrom(),
     subject: message.getSubject(),
     messageId: messageId,
+    rawHeaders: rawHeaders,
   };
 }
 
@@ -92,22 +99,29 @@ function buildCard(scanResult) {
     );
   card.addSection(scoreSection);
 
-  // Echo section - temporary, for verifying integration
-  if (scanResult.echo) {
-    const echoSection = CardService.newCardSection()
-      .setHeader('Received by backend')
-      .addWidget(
+  // Findings section
+  const triggeredSignals = (scanResult.signals || []).filter(s => s.triggered);
+  const findingsSection = CardService.newCardSection()
+    .setHeader(triggeredSignals.length > 0
+      ? `Findings (${triggeredSignals.length})`
+      : 'Findings'
+    );
+
+  if (triggeredSignals.length > 0) {
+    triggeredSignals.forEach(signal => {
+      findingsSection.addWidget(
         CardService.newDecoratedText()
-          .setTopLabel('From')
-          .setText(scanResult.echo.from || '(empty)')
-      )
-      .addWidget(
-        CardService.newDecoratedText()
-          .setTopLabel('Subject')
-          .setText(scanResult.echo.subject || '(empty)')
+          .setText(signal.explanation)
       );
-    card.addSection(echoSection);
+    });
+  } else {
+    findingsSection.addWidget(
+      CardService.newTextParagraph()
+        .setText('No suspicious indicators found')
+    );
   }
+
+  card.addSection(findingsSection);
 
   return card.build();
 }

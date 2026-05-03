@@ -6,13 +6,19 @@ from orchestrator import run_signals
 app = Flask(__name__)
 
 
+# Verdict thresholds based on the spec's 4-tier model
+VERDICT_THRESHOLDS = [
+    (70, "Malicious"),
+    (30, "High Risk"),
+    (10, "Suspicious"),
+]
+
+
 def _verdict(score: int) -> str:
-    if score >= 70:
-        return "Malicious"
-    if score >= 30:
-        return "High Risk"
-    if score >= 10:
-        return "Suspicious"
+    """Map a score to a verdict tier per the spec."""
+    for threshold, verdict in VERDICT_THRESHOLDS:
+        if score >= threshold:
+            return verdict
     return "Safe"
 
 
