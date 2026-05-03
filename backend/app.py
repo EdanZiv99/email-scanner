@@ -1,40 +1,66 @@
 from flask import Flask, request, jsonify
 
+from models import Email
+from orchestrator import run_signals
+
 app = Flask(__name__)
+
+
+def _verdict(score: int) -> str:
+    if score >= 70:
+        return "Malicious"
+    if score >= 30:
+        return "High Risk"
+    if score >= 10:
+        return "Suspicious"
+    return "Safe"
 
 
 @app.route("/scan", methods=["POST"])
 def scan():
-    """
-    Receives email metadata from the Gmail Add-on and returns a maliciousness
-    analysis. For now, returns a placeholder response - real analysis comes
-    in the next phase.
-    """
-    # Validate request has JSON body
+    """Receive email metadata from the Gmail Add-on and return a maliciousness analysis."""
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400
 
     data = request.get_json()
 
-    # Extract fields with defaults
-    from_address = data.get("from", "")
-    subject = data.get("subject", "")
-    message_id = data.get("messageId", "")
+    missing = [f for f in ("from", "subject", "messageId", "rawHeaders") if f not in data]
+    if missing:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
 
-    # Log what we received (helpful for debugging)
-    app.logger.info(
-        f"Scan request: from={from_address}, subject={subject!r}, id={message_id}"
+    email = Email(
+        from_address=data["from"],
+        subject=data["subject"],
+        message_id=data["messageId"],
+        raw_headers=data["rawHeaders"],
     )
 
-    # Placeholder response that echoes the sender so we can verify the data flows
+    app.logger.info(
+        "Scan request: from=%s, subject=%r, id=%s",
+        email.from_address, email.subject, email.message_id,
+    )
+
+    results = run_signals(email)
+
+    score = sum(r.weight for r in results if r.triggered)
+    verdict = _verdict(score)
+
     return jsonify({
-        "score": 0,
-        "verdict": "Safe",
-        "signals": [],
+        "score": score,
+        "verdict": verdict,
+        "signals": [
+            {
+                "name": r.signal_name,
+                "triggered": r.triggered,
+                "explanation": r.explanation,
+                "weight": r.weight,
+            }
+            for r in results
+        ],
         "echo": {
-            "from": from_address,
-            "subject": subject,
-        }
+            "from": email.from_address,
+            "subject": email.subject,
+        },
     })
 
 
