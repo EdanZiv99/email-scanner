@@ -101,13 +101,10 @@ function buildCard(scanResult) {
 
   // Findings section
   const triggeredSignals = (scanResult.signals || []).filter(s => s.triggered);
-  const findingsSection = CardService.newCardSection()
-    .setHeader(triggeredSignals.length > 0
-      ? `Findings (${triggeredSignals.length})`
-      : 'Findings'
-    );
+  const findingsSection = CardService.newCardSection();
 
   if (triggeredSignals.length > 0) {
+    findingsSection.setHeader(`Findings (${triggeredSignals.length})`);
     triggeredSignals.forEach(signal => {
       findingsSection.addWidget(
         CardService.newDecoratedText()
@@ -121,7 +118,7 @@ function buildCard(scanResult) {
     );
   }
 
-  card.addSection(findingsSection);
+card.addSection(findingsSection);
 
   return card.build();
 }
