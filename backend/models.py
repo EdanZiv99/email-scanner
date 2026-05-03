@@ -12,6 +12,7 @@ class Email:
     raw_headers: str  # full RFC822 header block as a single string
     html_body: str = ""
     text_body: str = ""
+    attachments: list = field(default_factory=list)  # list of {"filename": str, "size": int, "sha256": str}
 
     @property
     def headers_dict(self) -> dict:

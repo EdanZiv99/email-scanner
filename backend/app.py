@@ -41,6 +41,10 @@ def scan():
         raw_headers=data["rawHeaders"],
         html_body=data.get("htmlBody", ""),
         text_body=data.get("textBody", ""),
+        attachments=[
+            {"filename": a.get("filename", ""), "size": a.get("size", 0), "sha256": a.get("sha256", "")}
+            for a in data.get("attachments", [])
+        ],
     )
 
     app.logger.info(

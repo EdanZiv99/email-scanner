@@ -55,6 +55,24 @@ function extractEmailData(e) {
     console.warn('Could not retrieve plain text body:', e);
   }
 
+  let attachments = [];
+  try {
+    attachments = message.getAttachments().map(attachment => {
+      const hashBytes = Utilities.computeDigest(
+        Utilities.DigestAlgorithm.SHA_256,
+        attachment.getBytes()
+      );
+      const sha256 = hashBytes.map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
+      return {
+        filename: attachment.getName(),
+        size: attachment.getSize(),
+        sha256: sha256,
+      };
+    });
+  } catch (e) {
+    console.warn('Could not process attachments:', e);
+  }
+
   return {
     from: message.getFrom(),
     subject: message.getSubject(),
@@ -62,6 +80,7 @@ function extractEmailData(e) {
     rawHeaders: rawHeaders,
     htmlBody: htmlBody,
     textBody: textBody,
+    attachments: attachments,
   };
 }
 

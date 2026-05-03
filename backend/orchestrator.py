@@ -1,6 +1,7 @@
 import logging
 
 from models import Email, SignalResult
+from signals.dangerous_extensions import DangerousExtensionsSignal
 from signals.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
 from signals.dmarc import DmarcSignal
 from signals.lookalike_domain import LookalikeDomainSignal
@@ -14,6 +15,7 @@ _SIGNALS = [
     DisplayNameBrandImpersonationSignal(),
     LookalikeDomainSignal(),
     UrlHrefMismatchSignal(),
+    DangerousExtensionsSignal(),
 ]
 
 
