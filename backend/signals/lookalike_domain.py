@@ -1,3 +1,4 @@
+"""Lookalike domain signal: flags sender domains within edit distance 1-2 of known brand domains."""
 from rapidfuzz.distance import Levenshtein
 
 from models import Email, SignalResult

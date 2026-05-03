@@ -1,3 +1,4 @@
+"""Abstract ThreatIntelProvider interface and ThreatIntelResult dataclass."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 

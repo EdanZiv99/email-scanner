@@ -1,3 +1,4 @@
+"""Two signals that check the From display name for spoofed addresses and brand impersonation."""
 import re
 
 from models import Email, SignalResult

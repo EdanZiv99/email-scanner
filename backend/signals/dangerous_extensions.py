@@ -1,3 +1,4 @@
+"""Dangerous extensions signal: checks attachment filenames for executable file extensions."""
 from models import Email, SignalResult
 from signals.base import Signal
 

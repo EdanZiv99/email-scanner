@@ -1,3 +1,4 @@
+"""Flask entry point. Handles /scan (POST) and /health (GET) endpoints."""
 from flask import Flask, request, jsonify
 
 from models import Email

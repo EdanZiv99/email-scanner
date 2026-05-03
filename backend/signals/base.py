@@ -1,3 +1,4 @@
+"""Signal abstract base class. All signals inherit from Signal and implement evaluate()."""
 from abc import ABC, abstractmethod
 
 from models import Email, SignalResult

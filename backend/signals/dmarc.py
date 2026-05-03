@@ -1,3 +1,4 @@
+"""DMARC signal: reads the receiving server's verdict from the Authentication-Results header."""
 import re
 
 from models import Email, SignalResult

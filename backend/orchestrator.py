@@ -1,3 +1,4 @@
+"""Runs all signals against an Email and returns the collected SignalResult list."""
 import logging
 
 from models import Email, SignalResult
@@ -11,6 +12,8 @@ from signals.url_href_mismatch import UrlHrefMismatchSignal
 
 logger = logging.getLogger(__name__)
 
+# Instantiated once at module load, not per request — lets stateful signals
+# (e.g. ThreatIntelUrlSignal's rate limiter) persist their state across requests.
 _SIGNALS = [
     DmarcSignal(),
     DisplayNameEmailSpoofSignal(),

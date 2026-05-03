@@ -1,3 +1,4 @@
+"""URL/href mismatch signal: flags links where visible text shows a different domain than the href."""
 import re
 from html.parser import HTMLParser
 from urllib.parse import urlparse

@@ -1,3 +1,4 @@
+"""VirusTotal v3 API provider. Lookup-only — does not submit URLs for scanning."""
 import base64
 import os
 

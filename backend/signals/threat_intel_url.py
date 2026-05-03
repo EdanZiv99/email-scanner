@@ -1,3 +1,4 @@
+"""Threat intel signal: checks URLs extracted from the HTML body against VirusTotal."""
 import logging
 
 from models import Email, SignalResult

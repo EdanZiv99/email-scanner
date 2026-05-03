@@ -1,3 +1,8 @@
+/**
+ * Gmail Add-on entry point. Extracts email data, calls the Flask backend,
+ * and renders the result as a Gmail sidebar card.
+ */
+
 // Backend URL - update this when ngrok URL changes
 const BACKEND_URL = 'https://crusher-dragging-staring.ngrok-free.dev';
 

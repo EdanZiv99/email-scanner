@@ -1,3 +1,5 @@
+"""Known brand registry and domain helper. Used by display_name.py and lookalike_domain.py."""
+
 BRANDS = [
     {"name": "Microsoft", "aliases": ["microsoft"], "legitimate_domains": ["microsoft.com", "office.com", "outlook.com", "live.com", "microsoftonline.com"]},
     {"name": "Google", "aliases": ["google"], "legitimate_domains": ["google.com", "gmail.com", "youtube.com"]},

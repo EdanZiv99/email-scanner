@@ -1,3 +1,4 @@
+"""Shared parsing helpers used by multiple signals."""
 from email.utils import parseaddr
 from html.parser import HTMLParser
 from urllib.parse import urlparse

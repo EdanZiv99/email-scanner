@@ -1,3 +1,4 @@
+"""Sliding-window rate limiter used by external API providers."""
 import threading
 import time
 from collections import deque
@@ -20,6 +21,7 @@ class RateLimiter:
         """Return True if the call is allowed, False if the rate limit is exceeded."""
         with self.lock:
             now = time.time()
+            # Evict timestamps that have fallen outside the window.
             while self.calls and self.calls[0] < now - self.window_seconds:
                 self.calls.popleft()
             if len(self.calls) >= self.max_calls:
