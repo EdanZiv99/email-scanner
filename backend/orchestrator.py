@@ -3,6 +3,7 @@ import logging
 from models import Email, SignalResult
 from signals.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
 from signals.dmarc import DmarcSignal
+from signals.lookalike_domain import LookalikeDomainSignal
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,7 @@ _SIGNALS = [
     DmarcSignal(),
     DisplayNameEmailSpoofSignal(),
     DisplayNameBrandImpersonationSignal(),
+    LookalikeDomainSignal(),
 ]
 
 

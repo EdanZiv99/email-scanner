@@ -15,8 +15,8 @@ class DmarcSignal(Signal):
 
         if auth_results is None:
             return self._make_result(
-                triggered=True,
-                explanation="DMARC authentication result not found in headers",
+                triggered=False,
+                explanation="DMARC could not be evaluated: Authentication-Results header is missing",
                 metadata={},
             )
 
@@ -24,8 +24,8 @@ class DmarcSignal(Signal):
 
         if match is None:
             return self._make_result(
-                triggered=True,
-                explanation="DMARC authentication result not found in headers",
+                triggered=False,
+                explanation="DMARC could not be evaluated: no DMARC result reported in Authentication-Results",
                 metadata={"authentication-results": auth_results},
             )
 
@@ -40,6 +40,6 @@ class DmarcSignal(Signal):
 
         return self._make_result(
             triggered=True,
-            explanation="DMARC authentication failed",
+            explanation=f"DMARC authentication failed with result: {verdict}",
             metadata={"authentication-results": auth_results, "dmarc_result": verdict},
         )
