@@ -5,6 +5,7 @@ from signals.dangerous_extensions import DangerousExtensionsSignal
 from signals.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
 from signals.dmarc import DmarcSignal
 from signals.lookalike_domain import LookalikeDomainSignal
+from signals.reply_to_mismatch import ReplyToMismatchSignal
 from signals.threat_intel_url import ThreatIntelUrlSignal
 from signals.url_href_mismatch import UrlHrefMismatchSignal
 
@@ -18,6 +19,7 @@ _SIGNALS = [
     UrlHrefMismatchSignal(),
     DangerousExtensionsSignal(),
     ThreatIntelUrlSignal(),
+    ReplyToMismatchSignal(),
 ]
 
 
