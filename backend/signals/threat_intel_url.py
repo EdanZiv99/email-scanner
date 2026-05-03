@@ -36,6 +36,11 @@ def _dynamic_weight(malicious_count: int) -> int:
     return 15
 
 
+def _is_trump(malicious_count: int) -> bool:
+    # 10+ vendors is overwhelming consensus — no reasonable scoring outcome should yield "Safe".
+    return malicious_count >= 10
+
+
 class ThreatIntelUrlSignal(Signal):
     """Checks URLs extracted from the HTML body against VirusTotal."""
 
@@ -106,6 +111,7 @@ class ThreatIntelUrlSignal(Signal):
             triggered=True,
             explanation=f"URL flagged as malicious by {max_malicious}/{max_total} vendors: {worst_url}",
             weight=_dynamic_weight(max_malicious),
+            trump_card=_is_trump(max_malicious),
             metadata={
                 "urls_checked": len(urls_to_check),
                 "max_malicious": max_malicious,

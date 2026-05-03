@@ -7,6 +7,14 @@ DANGEROUS_EXTENSIONS = frozenset({
     "vhd", "hta", "cpl", "reg", "dll", "scf", "inf", "sys",
 })
 
+# Subset that warrants a trump card: high-confidence execution vectors with almost no
+# legitimate use in email. Excludes container formats (.iso, .img, .jar) that have edge-case
+# legitimate uses.
+STRICT_DANGEROUS = frozenset({
+    "exe", "scr", "bat", "com", "cmd", "pif",
+    "vbs", "jse", "wsf", "hta", "msi",
+})
+
 
 def _dangerous_extension(filename: str) -> str:
     """Return the dangerous extension from filename, or empty string if safe.
@@ -38,13 +46,27 @@ class DangerousExtensionsSignal(Signal):
 
         dangerous_files = []
         extensions_found = set()
+        is_trump = False
+        trump_reason = None
 
         for attachment in email.attachments:
             filename = attachment.get("filename", "")
             ext = _dangerous_extension(filename)
-            if ext:
-                dangerous_files.append(filename)
-                extensions_found.add(ext)
+            if not ext:
+                continue
+
+            dangerous_files.append(filename)
+            extensions_found.add(ext)
+
+            # Double-extension trick (e.g. invoice.pdf.exe) is always a trump — it's a
+            # deliberate attempt to disguise an executable as a benign file type.
+            is_double = filename.count(".") >= 2
+            if is_double:
+                is_trump = True
+                trump_reason = "double_extension"
+            elif ext in STRICT_DANGEROUS and not is_trump:
+                is_trump = True
+                trump_reason = "strict_dangerous_extension"
 
         if not dangerous_files:
             return self._make_result(
@@ -52,11 +74,22 @@ class DangerousExtensionsSignal(Signal):
                 explanation="No dangerous attachment extensions found",
             )
 
+        ext_list = ", ".join(sorted(extensions_found))
+        if is_trump:
+            explanation = f"High-severity attachment(s) detected ({ext_list}): {', '.join(dangerous_files)}"
+        else:
+            explanation = f"Found {len(dangerous_files)} attachment(s) with dangerous extension(s): {ext_list}"
+
+        metadata = {
+            "dangerous_files": dangerous_files,
+            "extensions_found": sorted(extensions_found),
+        }
+        if is_trump:
+            metadata["trump_reason"] = trump_reason
+
         return self._make_result(
             triggered=True,
-            explanation=f"Found {len(dangerous_files)} attachment(s) with dangerous extension(s): {', '.join(sorted(extensions_found))}",
-            metadata={
-                "dangerous_files": dangerous_files,
-                "extensions_found": sorted(extensions_found),
-            },
+            explanation=explanation,
+            metadata=metadata,
+            trump_card=is_trump,
         )

@@ -24,18 +24,31 @@ def score_email(results: list) -> dict:
       - score: int (sum of weights of triggered signals)
       - verdict: str (one of "Safe", "Suspicious", "High Risk", "Malicious")
       - signals: list of dicts for each result (all signals, triggered and not)
+      - trump_card_triggered: bool
+      - trump_signals: list of signal names that fired as trump cards
     """
     score = sum(r.weight for r in results if r.triggered)
+
+    trump_signals = [r.signal_name for r in results if r.triggered and r.trump_card]
+    trump_card_triggered = bool(trump_signals)
+
+    # Trump cards override the verdict regardless of additive score — a known-malicious
+    # attachment or URL is always Malicious even if no other signals fired.
+    verdict = "Malicious" if trump_card_triggered else _verdict(score)
+
     return {
         "score": score,
-        "verdict": _verdict(score),
+        "verdict": verdict,
         "signals": [
             {
                 "name": r.signal_name,
                 "triggered": r.triggered,
                 "explanation": r.explanation,
                 "weight": r.weight,
+                "trump_card": r.trump_card,
             }
             for r in results
         ],
+        "trump_card_triggered": trump_card_triggered,
+        "trump_signals": trump_signals,
     }

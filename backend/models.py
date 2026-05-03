@@ -35,3 +35,4 @@ class SignalResult:
     weight: int       # points added to total score when triggered
     explanation: str  # human-readable verdict shown to the user
     metadata: dict = field(default_factory=dict)  # debug info, not shown to user
+    trump_card: bool = False  # if True, verdict is forced to "Malicious" regardless of total score
