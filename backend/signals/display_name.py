@@ -67,8 +67,10 @@ class DisplayNameBrandImpersonationSignal(Signal):
 
         lower_name = display_name.lower()
 
+        # BRANDS and domain_matches live in signals/brands.py — shared with lookalike_domain.py.
         for brand in BRANDS:
             for alias in brand["aliases"]:
+                # Word boundaries prevent "matters" from matching "att" or "attacker" from matching "att".
                 pattern = r"\b" + re.escape(alias) + r"\b"
                 if re.search(pattern, lower_name, re.IGNORECASE):
                     if domain_matches(sender_domain, brand["legitimate_domains"]):
@@ -76,6 +78,8 @@ class DisplayNameBrandImpersonationSignal(Signal):
                             triggered=False,
                             explanation=f"Display name references {brand['name']} and sender domain is legitimate",
                         )
+                    # TODO: if the display name matches multiple brands (e.g. "Apple News from Microsoft"),
+                    # only the first match in BRANDS order is returned. This is an acceptable MVP limitation.
                     return self._make_result(
                         triggered=True,
                         explanation=f"Display name impersonates {brand['name']} but sender domain {sender_domain} is not a known legitimate domain for that brand",

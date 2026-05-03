@@ -5,7 +5,9 @@ from signals.base import Signal
 from signals.brands import BRANDS, domain_matches
 from signals.utils import parse_from_header
 
-_MIN_DOMAIN_LEN = 5
+# Distance of 1-2 catches common substitutions (paypa1.com) and additions (paypalll.com)
+# without too many false positives. Distance 3+ produces too much noise in practice.
+_MIN_DOMAIN_LEN = 5  # short domains (e.g. "ups.com") hit too many unrelated matches at distance 2
 _MAX_DISTANCE = 2
 
 
@@ -43,8 +45,10 @@ class LookalikeDomainSignal(Signal):
         best_legit = None
         best_brand = None
 
+        # BRANDS and domain_matches live in signals/brands.py — shared with display_name.py.
         for brand in BRANDS:
             for legit in brand["legitimate_domains"]:
+                # Exact/subdomain match: bail out immediately — no need to compute distances.
                 if domain_matches(sender_domain, [legit]):
                     return self._make_result(
                         triggered=False,

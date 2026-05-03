@@ -20,6 +20,8 @@ class DmarcSignal(Signal):
                 metadata={},
             )
 
+        # Authentication-Results can carry multiple results (spf=, dkim=, dmarc=) separated by
+        # semicolons — regex is more robust than splitting on a fixed delimiter.
         match = re.search(r"dmarc=(\w+)", auth_results, re.IGNORECASE)
 
         if match is None:
@@ -31,6 +33,8 @@ class DmarcSignal(Signal):
 
         verdict = match.group(1).lower()
 
+        # Only "pass" is safe. Values like "none", "temperror", "permerror" indicate the receiving
+        # server could not verify DMARC, which is suspicious but not conclusive — still trigger.
         if verdict == "pass":
             return self._make_result(
                 triggered=False,

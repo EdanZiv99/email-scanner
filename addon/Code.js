@@ -62,6 +62,7 @@ function extractEmailData(e) {
         Utilities.DigestAlgorithm.SHA_256,
         attachment.getBytes()
       );
+      // Apps Script returns signed bytes; `b & 0xff` converts to unsigned before hex encoding.
       const sha256 = hashBytes.map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
       return {
         filename: attachment.getName(),
@@ -73,6 +74,8 @@ function extractEmailData(e) {
     console.warn('Could not process attachments:', e);
   }
 
+  // Payload keys are camelCase (JS convention). The Flask endpoint maps them to snake_case.
+  // Required: from, subject, messageId, rawHeaders. Optional: htmlBody, textBody, attachments.
   return {
     from: message.getFrom(),
     subject: message.getSubject(),

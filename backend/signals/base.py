@@ -13,12 +13,15 @@ class Signal(ABC):
     def evaluate(self, email: Email) -> SignalResult:
         """Run the signal against the email and return a result."""
 
-    def _make_result(self, triggered: bool, explanation: str, metadata: dict = None) -> SignalResult:
-        """Convenience constructor that fills in signal_name and weight automatically."""
+    def _make_result(self, triggered: bool, explanation: str, metadata: dict = None, weight: int = None) -> SignalResult:
+        """Convenience constructor that fills in signal_name and weight automatically.
+
+        Pass weight to override the class-level default for dynamic severity scoring.
+        """
         return SignalResult(
             signal_name=self.name,
             triggered=triggered,
-            weight=self.weight,
+            weight=weight if weight is not None else self.weight,
             explanation=explanation,
             metadata=metadata or {},
         )

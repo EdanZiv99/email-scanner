@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 from models import Email, SignalResult
 from signals.base import Signal
 
+# Only flag links where the visible text itself looks like a domain — avoids false positives
+# on legitimate "Click here" or "Read more" anchor text that links to a different domain.
 _DOMAIN_PATTERN = re.compile(r'\b[\w\-]+\.[a-z]{2,}\b', re.IGNORECASE)
 _SKIP_SCHEMES = {"mailto", "tel", "javascript"}
 
@@ -14,6 +16,7 @@ def _extract_domain(url: str) -> str:
     try:
         netloc = urlparse(url).netloc
         host = netloc.split(":")[0].lower()
+        # Strip www. so "www.paypal.com" in visible text matches "paypal.com" href.
         if host.startswith("www."):
             host = host[4:]
         return host

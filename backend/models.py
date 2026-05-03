@@ -9,9 +9,10 @@ class Email:
     from_address: str
     subject: str
     message_id: str
-    raw_headers: str  # full RFC822 header block as a single string
+    raw_headers: str  # headers-only block (no body); the add-on splits on \r\n\r\n before sending
     html_body: str = ""
     text_body: str = ""
+    # sha256 is computed client-side; raw bytes never leave the add-on (privacy + payload size)
     attachments: list = field(default_factory=list)  # list of {"filename": str, "size": int, "sha256": str}
 
     @property

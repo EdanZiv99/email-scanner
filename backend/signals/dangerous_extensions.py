@@ -14,6 +14,8 @@ def _dangerous_extension(filename: str) -> str:
     Also catches double-extension tricks like 'invoice.pdf.exe' — the outer
     extension is what matters for execution.
     """
+    # rsplit with maxsplit=1 takes only the outermost extension, which is what the OS
+    # uses to determine file type. Inner extensions (e.g. ".pdf" in "report.pdf.exe") are cosmetic.
     parts = filename.rsplit(".", 1)
     if len(parts) < 2:
         return ""

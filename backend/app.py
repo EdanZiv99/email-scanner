@@ -34,6 +34,8 @@ def scan():
     if missing:
         return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
 
+    # Payload uses camelCase (JS convention); Email dataclass uses snake_case (Python convention).
+    # htmlBody, textBody, and attachments are optional — older add-on versions may not send them.
     email = Email(
         from_address=data["from"],
         subject=data["subject"],
