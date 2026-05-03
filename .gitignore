@@ -1,5 +1,13 @@
+# Python
 venv/
-.env
 __pycache__/
-.DS_Store
 *.pyc
+
+# Apps Script
+addon/.clasp.json
+
+# OS
+.DS_Store
+
+# Secrets
+.env
