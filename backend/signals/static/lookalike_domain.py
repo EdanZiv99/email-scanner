@@ -3,7 +3,7 @@ from rapidfuzz.distance import Levenshtein
 
 from models import Email, SignalResult
 from signals.base import Signal
-from signals.brands import BRANDS, domain_matches
+from signals.data.brands import BRANDS, domain_matches
 from signals.utils import parse_from_header
 
 # Distance of 1-2 catches common substitutions (paypa1.com) and additions (paypalll.com)
@@ -46,7 +46,7 @@ class LookalikeDomainSignal(Signal):
         best_legit = None
         best_brand = None
 
-        # BRANDS and domain_matches live in signals/brands.py — shared with display_name.py.
+        # BRANDS and domain_matches live in signals/data/brands.py — shared with display_name.py.
         for brand in BRANDS:
             for legit in brand["legitimate_domains"]:
                 # Exact/subdomain match: bail out immediately — no need to compute distances.

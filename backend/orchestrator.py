@@ -2,13 +2,13 @@
 import logging
 
 from models import Email, SignalResult
-from signals.dangerous_extensions import DangerousExtensionsSignal
-from signals.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
-from signals.dmarc import DmarcSignal
-from signals.lookalike_domain import LookalikeDomainSignal
-from signals.reply_to_mismatch import ReplyToMismatchSignal
-from signals.threat_intel_url import ThreatIntelUrlSignal
-from signals.url_href_mismatch import UrlHrefMismatchSignal
+from signals.external.threat_intel_url import ThreatIntelUrlSignal
+from signals.static.dangerous_extensions import DangerousExtensionsSignal
+from signals.static.display_name import DisplayNameBrandImpersonationSignal, DisplayNameEmailSpoofSignal
+from signals.static.dmarc import DmarcSignal
+from signals.static.lookalike_domain import LookalikeDomainSignal
+from signals.static.reply_to_mismatch import ReplyToMismatchSignal
+from signals.static.url_href_mismatch import UrlHrefMismatchSignal
 
 logger = logging.getLogger(__name__)
 

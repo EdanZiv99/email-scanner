@@ -3,7 +3,7 @@ import re
 
 from models import Email, SignalResult
 from signals.base import Signal
-from signals.brands import BRANDS, domain_matches
+from signals.data.brands import BRANDS, domain_matches
 from signals.utils import parse_from_header
 
 
@@ -68,7 +68,7 @@ class DisplayNameBrandImpersonationSignal(Signal):
 
         lower_name = display_name.lower()
 
-        # BRANDS and domain_matches live in signals/brands.py — shared with lookalike_domain.py.
+        # BRANDS and domain_matches live in signals/data/brands.py — shared with lookalike_domain.py.
         for brand in BRANDS:
             for alias in brand["aliases"]:
                 # Word boundaries prevent "matters" from matching "att" or "attacker" from matching "att".
