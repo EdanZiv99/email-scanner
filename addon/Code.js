@@ -327,7 +327,45 @@ function buildCard(scanResult) {
   }
   card.addSection(findingsSection);
 
-  // Section 6: VirusTotal button (only if threat_intel_url triggered and permalink available)
+  // Section 6: AI analysis status / button
+  const llmSignal = (scanResult.signals || []).find(s => s.name === 'gemini_analysis');
+  if (llmSignal) {
+    // LLM was already invoked — show outcome notice
+    let noticeText;
+    if (llmSignal.triggered) {
+      noticeText = '<font color="#0d8043">✓ AI analysis complete</font>';
+    } else if ((llmSignal.explanation || '').includes('unavailable')) {
+      noticeText = '<font color="#f9a825">⚠ AI analysis temporarily unavailable</font>';
+    } else {
+      noticeText = '<font color="#0d8043">✓ AI analysis: no threats detected</font>';
+    }
+    card.addSection(
+      CardService.newCardSection()
+        .addWidget(CardService.newTextParagraph().setText(noticeText))
+    );
+  } else {
+    // Offer on-demand LLM analysis for all verdicts
+    const previousResult = {
+      score: scanResult.score,
+      signals: scanResult.signals,
+      trump_card_triggered: scanResult.trump_card_triggered,
+      trump_signals: scanResult.trump_signals,
+    };
+    card.addSection(
+      CardService.newCardSection()
+        .addWidget(
+          CardService.newTextButton()
+            .setText('🤖 Run AI Analysis')
+            .setOnClickAction(
+              CardService.newAction()
+                .setFunctionName('runLlmAnalysis_')
+                .setParameters({ previousResult: JSON.stringify(previousResult) })
+            )
+        )
+    );
+  }
+
+  // Section 7: VirusTotal button (only if threat_intel_url triggered and permalink available)
   const threatIntelSignal = (scanResult.signals || []).find(
     s => s.name === 'threat_intel_url' && s.triggered
   );
@@ -345,6 +383,47 @@ function buildCard(scanResult) {
   }
 
   return card.build();
+}
+
+
+/**
+ * Action handler for the "Run AI Analysis" button.
+ * Re-extracts email data, posts to /scan/llm, and pushes the updated card.
+ *
+ * @param {Object} e Action event object provided by Gmail.
+ * @return {ActionResponse} Navigation to the updated card.
+ */
+function runLlmAnalysis_(e) {
+  try {
+    const emailData = extractEmailData(e);
+    const previousResult = JSON.parse(e.parameters.previousResult || '{}');
+
+    const options = {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ ...emailData, previousResult: previousResult }),
+      muteHttpExceptions: true,
+    };
+
+    const response = UrlFetchApp.fetch(`${BACKEND_URL}/scan/llm`, options);
+    const code = response.getResponseCode();
+
+    if (code !== 200) {
+      throw new Error(`Backend returned ${code}: ${response.getContentText()}`);
+    }
+
+    const scanResult = JSON.parse(response.getContentText());
+    const card = buildCard(scanResult);
+
+    return CardService.newActionResponseBuilder()
+      .setNavigation(CardService.newNavigation().pushCard(card))
+      .build();
+  } catch (error) {
+    console.error('AI analysis error:', error);
+    return CardService.newActionResponseBuilder()
+      .setNavigation(CardService.newNavigation().pushCard(buildErrorCard(error.message)))
+      .build();
+  }
 }
 
 

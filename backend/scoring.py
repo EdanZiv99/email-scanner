@@ -15,6 +15,24 @@ def _verdict(score: int) -> str:
     return "Safe"
 
 
+def compute_verdict_and_score(signal_dicts: list) -> dict:
+    """Compute score and verdict from a list of signal dicts.
+
+    Each dict must have at minimum: triggered (bool), weight (int),
+    trump_card (bool), name (str).
+    """
+    score = sum(s["weight"] for s in signal_dicts if s.get("triggered"))
+    trump_signals = [s["name"] for s in signal_dicts if s.get("triggered") and s.get("trump_card")]
+    trump_card_triggered = bool(trump_signals)
+    verdict = "Malicious" if trump_card_triggered else _verdict(score)
+    return {
+        "score": score,
+        "verdict": verdict,
+        "trump_card_triggered": trump_card_triggered,
+        "trump_signals": trump_signals,
+    }
+
+
 def score_email(results: list) -> dict:
     """Aggregate signal results into a final score and verdict.
 
@@ -25,30 +43,20 @@ def score_email(results: list) -> dict:
       - trump_card_triggered: bool
       - trump_signals: list of signal names that fired as trump cards
     """
-    score = sum(r.weight for r in results if r.triggered)
-
-    trump_signals = [r.signal_name for r in results if r.triggered and r.trump_card]
-    trump_card_triggered = bool(trump_signals)
-
-    # Trump cards override the verdict regardless of additive score — a known-malicious
-    # attachment or URL is always Malicious even if no other signals fired.
-    verdict = "Malicious" if trump_card_triggered else _verdict(score)
-
+    signal_dicts = [
+        {
+            "name": r.signal_name,
+            "category": r.category,
+            "triggered": r.triggered,
+            "explanation": r.explanation,
+            "weight": r.weight,
+            "trump_card": r.trump_card,
+            "metadata": r.metadata,
+        }
+        for r in results
+    ]
+    computed = compute_verdict_and_score(signal_dicts)
     return {
-        "score": score,
-        "verdict": verdict,
-        "signals": [
-            {
-                "name": r.signal_name,
-                "category": r.category,
-                "triggered": r.triggered,
-                "explanation": r.explanation,
-                "weight": r.weight,
-                "trump_card": r.trump_card,
-                "metadata": r.metadata,
-            }
-            for r in results
-        ],
-        "trump_card_triggered": trump_card_triggered,
-        "trump_signals": trump_signals,
+        **computed,
+        "signals": signal_dicts,
     }

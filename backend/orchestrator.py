@@ -25,6 +25,9 @@ _SIGNALS = [
     ReplyToMismatchSignal(),
 ]
 
+# Singleton for the on-demand LLM signal — preserves rate limiter state across requests.
+_gemini_signal = None
+
 
 def run_signals(email: Email) -> list:
     """Run all registered signals against the email and return their results.
@@ -49,3 +52,23 @@ def run_signals(email: Email) -> list:
                 metadata={},
             ))
     return results
+
+
+def run_llm_analysis_only(email: Email) -> SignalResult:
+    """Run only the Gemini analysis signal. Used by the on-demand /scan/llm endpoint."""
+    global _gemini_signal
+    if _gemini_signal is None:
+        from signals.external.gemini_analysis import GeminiAnalysisSignal
+        _gemini_signal = GeminiAnalysisSignal()
+
+    try:
+        return _gemini_signal.evaluate(email)
+    except Exception as e:
+        logger.exception("GeminiAnalysisSignal raised an unexpected error")
+        return SignalResult(
+            signal_name="gemini_analysis",
+            category="AI Analysis",
+            triggered=False,
+            weight=0,
+            explanation=f"AI analysis failed unexpectedly: {e}",
+        )

@@ -19,7 +19,7 @@ Respond with ONLY a JSON object matching this exact schema. No prose, no markdow
   "verdict": "safe" | "suspicious" | "high_risk" | "malicious",
   "confidence": "low" | "medium" | "high",
   "threat_types": [list of strings from: "urgency_manipulation", "authority_impersonation", "credential_phishing", "financial_scam", "pretexting", "social_engineering", "suspicious_request", "inconsistency"],
-  "explanation": "One concise paragraph (2-3 sentences) explaining your verdict. Reference specific evidence from the email.",
+  "explanation": "One sentence summary of why this verdict was chosen, maximum 25 words. Reference specific evidence from the email.",
   "key_indicators": [list of 0-5 short strings, each describing one specific finding from the email — be concrete, quote or paraphrase actual content]
 }
 

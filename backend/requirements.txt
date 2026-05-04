@@ -1,4 +1,5 @@
 flask
 rapidfuzz
 requests
-google-generativeaipython-dotenv
+google-genai
+python-dotenv
