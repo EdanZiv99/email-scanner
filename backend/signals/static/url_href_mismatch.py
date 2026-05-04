@@ -77,6 +77,7 @@ class UrlHrefMismatchSignal(Signal):
     """Detects anchor tags where the visible text domain differs from the href destination."""
 
     name = "url_href_mismatch"
+    category = "Suspicious Links"
     weight = 18
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -116,12 +117,15 @@ class UrlHrefMismatchSignal(Signal):
             )
 
         visible, actual = mismatches[0]
+        n = len(mismatches)
+        explanation = (
+            f"Link displays '{visible}' but actually goes to '{actual}'."
+            if n == 1 else
+            f"Link displays '{visible}' but actually goes to '{actual}' ({n} similar mismatches found)."
+        )
         return self._make_result(
             triggered=True,
-            explanation=(
-                f"Found {len(mismatches)} link(s) where visible text and actual destination differ. "
-                f"Example: text says '{visible}' but link goes to '{actual}'"
-            ),
+            explanation=explanation,
             metadata={
                 "mismatch_count": len(mismatches),
                 "first_mismatch": {

@@ -46,6 +46,7 @@ class ThreatIntelUrlSignal(Signal):
     """Checks URLs extracted from the HTML body against VirusTotal."""
 
     name = "threat_intel_url"
+    category = "Suspicious Links"
     weight = 30  # default; overridden dynamically based on malicious vendor count
 
     def __init__(self, provider=None):
@@ -110,7 +111,7 @@ class ThreatIntelUrlSignal(Signal):
 
         return self._make_result(
             triggered=True,
-            explanation=f"URL flagged as malicious by {max_malicious}/{max_total} vendors: {worst_url}",
+            explanation=f"URL '{worst_url}' is flagged as malicious by {max_malicious} of {max_total} security vendors on VirusTotal.",
             weight=_dynamic_weight(max_malicious),
             trump_card=_is_trump(max_malicious),
             metadata={

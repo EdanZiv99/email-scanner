@@ -11,6 +11,7 @@ class DisplayNameEmailSpoofSignal(Signal):
     """Detects when the display name contains an email address from a different domain than the actual sender."""
 
     name = "display_name_email_spoof"
+    category = "Impersonation"
     weight = 25
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -42,7 +43,7 @@ class DisplayNameEmailSpoofSignal(Signal):
 
         return self._make_result(
             triggered=True,
-            explanation=f"Display name impersonates email address {claimed_address} but message was sent from {address}",
+            explanation=f"Display name shows email '{claimed_address}' but message was actually sent from '{address}'.",
             metadata={
                 "claimed_address": claimed_address,
                 "actual_address": address,
@@ -54,6 +55,7 @@ class DisplayNameBrandImpersonationSignal(Signal):
     """Detects when the display name references a known brand but the sender domain is not legitimate."""
 
     name = "display_name_brand_impersonation"
+    category = "Impersonation"
     weight = 12
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -83,7 +85,7 @@ class DisplayNameBrandImpersonationSignal(Signal):
                     # only the first match in BRANDS order is returned. This is an acceptable MVP limitation.
                     return self._make_result(
                         triggered=True,
-                        explanation=f"Display name impersonates {brand['name']} but sender domain {sender_domain} is not a known legitimate domain for that brand",
+                        explanation=f"Display name impersonates '{brand['name']}' but sender domain '{sender_domain}' is not a legitimate domain for that brand.",
                         metadata={
                             "impersonated_brand": brand["name"],
                             "matched_alias": alias,

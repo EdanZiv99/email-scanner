@@ -1,7 +1,5 @@
 """Aggregates signal results into a final score and verdict."""
 
-from models import SignalResult
-
 # Thresholds are checked highest-first; first match wins. Scores below 10 fall through to "Safe".
 VERDICT_THRESHOLDS = [
     (70, "Malicious"),
@@ -42,10 +40,12 @@ def score_email(results: list) -> dict:
         "signals": [
             {
                 "name": r.signal_name,
+                "category": r.category,
                 "triggered": r.triggered,
                 "explanation": r.explanation,
                 "weight": r.weight,
                 "trump_card": r.trump_card,
+                "metadata": r.metadata,
             }
             for r in results
         ],

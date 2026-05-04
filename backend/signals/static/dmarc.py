@@ -9,6 +9,7 @@ class DmarcSignal(Signal):
     """Checks the Authentication-Results header for a DMARC pass/fail verdict."""
 
     name = "dmarc"
+    category = "Authentication"
     weight = 20
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -43,8 +44,11 @@ class DmarcSignal(Signal):
                 metadata={"authentication-results": auth_results},
             )
 
+        from_domain = email.headers_dict.get("from", "")
+        # Extract bare domain for display — best effort, no strict parsing needed here.
+        sender_domain = from_domain.split("@")[-1].strip().rstrip(">").strip() if "@" in from_domain else from_domain
         return self._make_result(
             triggered=True,
-            explanation=f"DMARC authentication failed with result: {verdict}",
+            explanation=f"DMARC authentication failed for sender domain '{sender_domain}' (result: {verdict}).",
             metadata={"authentication-results": auth_results, "dmarc_result": verdict},
         )

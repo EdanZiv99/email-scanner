@@ -7,7 +7,8 @@ from models import Email, SignalResult
 class Signal(ABC):
     """Abstract base class for all email analysis signals."""
 
-    name: str    # e.g. "dmarc"
+    name: str       # e.g. "dmarc"
+    category: str = "Other"  # high-level threat class; subclasses must override
     weight: int  # score contribution when triggered
 
     @abstractmethod
@@ -23,6 +24,7 @@ class Signal(ABC):
         """
         return SignalResult(
             signal_name=self.name,
+            category=self.category,
             triggered=triggered,
             weight=weight if weight is not None else self.weight,
             explanation=explanation,

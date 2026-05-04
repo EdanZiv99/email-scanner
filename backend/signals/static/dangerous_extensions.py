@@ -36,6 +36,7 @@ class DangerousExtensionsSignal(Signal):
     """Detects attachments with file extensions associated with executable or malicious files."""
 
     name = "dangerous_extensions"
+    category = "Dangerous Attachment"
     weight = 25
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -75,11 +76,14 @@ class DangerousExtensionsSignal(Signal):
                 explanation="No dangerous attachment extensions found",
             )
 
-        ext_list = ", ".join(sorted(extensions_found))
-        if is_trump:
-            explanation = f"High-severity attachment(s) detected ({ext_list}): {', '.join(dangerous_files)}"
+        first_file = dangerous_files[0]
+        first_ext = _dangerous_extension(first_file)
+        if trump_reason == "double_extension":
+            explanation = f"Attachment '{first_file}' uses a deceptive double extension ending in '.{first_ext}'."
+        elif trump_reason == "strict_dangerous_extension":
+            explanation = f"Attachment '{first_file}' uses dangerous file extension '.{first_ext}'."
         else:
-            explanation = f"Found {len(dangerous_files)} attachment(s) with dangerous extension(s): {ext_list}"
+            explanation = f"Attachment '{first_file}' uses a potentially risky file extension '.{first_ext}'."
 
         metadata = {
             "dangerous_files": dangerous_files,

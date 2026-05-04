@@ -28,6 +28,7 @@ class LookalikeDomainSignal(Signal):
     """Detects sender domains visually similar to known brand domains (e.g. paypa1.com)."""
 
     name = "lookalike_domain"
+    category = "Impersonation"
     weight = 20
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -72,7 +73,7 @@ class LookalikeDomainSignal(Signal):
         if best_distance is not None:
             return self._make_result(
                 triggered=True,
-                explanation=f"Sender domain {sender_domain} closely resembles the legitimate {best_brand} domain {best_legit}",
+                explanation=f"Sender domain '{sender_domain}' closely resembles legitimate brand domain '{best_legit}' (edit distance: {best_distance}).",
                 metadata={
                     "sender_domain": sender_domain,
                     "lookalike_of": best_legit,

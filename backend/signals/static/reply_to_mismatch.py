@@ -21,6 +21,7 @@ class ReplyToMismatchSignal(Signal):
     """Detects BEC/phishing emails where Reply-To redirects replies to an attacker-controlled domain."""
 
     name = "reply_to_mismatch"
+    category = "Authentication"
     weight = 14
 
     def evaluate(self, email: Email) -> SignalResult:
@@ -60,7 +61,7 @@ class ReplyToMismatchSignal(Signal):
 
         return self._make_result(
             triggered=True,
-            explanation=f"Reply-To domain '{reply_to_domain}' differs from From domain '{from_domain}'. Replies will go to a different organization.",
+            explanation=f"Reply-To domain '{reply_to_domain}' does not match sender domain '{from_domain}'.",
             metadata={
                 "from_domain": from_domain,
                 "reply_to_domain": reply_to_domain,
