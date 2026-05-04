@@ -15,4 +15,4 @@ addon/.clasp.json
 .idea/
 
 # Secrets
-.env
+.envCLAUDE.md
