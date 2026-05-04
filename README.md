@@ -14,7 +14,7 @@ What makes the implementation distinctive:
 
 - **Multi-layer signal architecture**: static header/content analysis, external threat intelligence, and an optional LLM-based holistic analysis via Gemini.
 - **Trump card system**: high-confidence signals (executable attachments, VirusTotal consensus) can force a Malicious verdict regardless of the additive score.
-- **On-demand AI analysis**: the Gemini signal runs only when the user explicitly requests it, preserving API quota and avoiding a slow mandatory round-trip on every email.
+- **On-demand AI analysis**: the Gemini signal runs only when the user explicitly requests it, analyzing email content and language for social engineering, urgency manipulation, and other patterns that rule-based signals cannot detect — while preserving API quota and avoiding a slow mandatory round-trip on every email.
 - **Security as a first-class constraint**: untrusted input is isolated, prompt injection is mitigated, attachments never leave the client, and outbound calls go to fixed endpoints only.
 
 ---
@@ -37,33 +37,16 @@ What makes the implementation distinctive:
 ## Architecture
 
 ```mermaid
-flowchart TD
-    User["Gmail (browser)"]
-    Addon["Apps Script add-on\n(Code.js)"]
-    Flask["Flask backend\n(app.py)"]
-    Orchestrator["Orchestrator\n(orchestrator.py)"]
-    Scoring["Scoring\n(scoring.py)"]
-    StaticSignals["Static signals\n(headers, body, attachments)"]
-    VT["VirusTotal v3 API"]
-    Gemini["Gemini 2.5 Flash API"]
-
-    User -->|opens email| Addon
-    Addon -->|POST /scan\nheaders + body + attachment metadata| Flask
-    Flask --> Orchestrator
-    Orchestrator --> StaticSignals
-    Orchestrator -->|URLs from HTML body| VT
-    Scoring -->|score + verdict + signals| Flask
+flowchart LR
+    Gmail["Gmail"] -->|email data| Addon["Apps Script add-on"]
+    Addon -->|POST /scan| Flask["Flask backend"]
+    Flask -->|run signals| Signals["Signals (static + external)"]
+    Signals -->|URL lookup| VT["VirusTotal API"]
+    Signals -->|LLM analysis| Gemini["Gemini API"]
+    Signals -->|results| Scoring["Scoring"]
+    Scoring -->|verdict + score| Flask
     Flask -->|JSON response| Addon
-    Addon -->|renders card| User
-
-    User -->|clicks Run AI Analysis| Addon
-    Addon -->|POST /scan/llm\n+ previousResult| Flask
-    Flask -->|email content| Gemini
-    Gemini -->|structured JSON verdict| Flask
-    Flask -->|merged result| Addon
-
-    StaticSignals --> Scoring
-    VT --> Orchestrator
+    Addon -->|renders card| Gmail
 ```
 
 ### Apps Script vs Flask
@@ -117,7 +100,7 @@ Each triggered signal contributes its weight to an additive score. The score is 
 | 10–29 | Suspicious |
 | < 10 | Safe |
 
-**Trump cards override additive scoring.** If any signal fires with `trump_card=True`, the verdict is forced to **Malicious** regardless of the total score. This handles cases where a single finding is definitive — a document disguised as `invoice.pdf.exe`, or a URL flagged by 10+ VirusTotal vendors, means the email is malicious no matter what other signals say.
+**Trump cards override additive scoring.** If any signal fires with `trump_card=True`, the verdict is forced to **Malicious** regardless of the total score. This handles cases where a single finding is definitive — a document disguised as `invoice.pdf.exe`, or a URL flagged by 6+ VirusTotal vendors, means the email is malicious no matter what other signals say.
 
 ---
 
@@ -287,6 +270,9 @@ email-scorer/
 **Apps Script as a thin client, Flask for all logic.**
 Apps Script is the only way to access Gmail message content within Google's sandboxed runtime, but it imposes strict execution quotas, has no library ecosystem, and cannot store secrets. Keeping it as a minimal HTTP client means all analysis logic runs in a normal Python environment where signals can use arbitrary libraries and be tested independently.
 
+**Abstract base classes enforce a uniform contract.**
+`Signal` (`signals/base.py`) and `ThreatIntelProvider` (`providers/base.py`) are abstract classes that define the interface every signal and provider must implement. The orchestrator calls `signal.evaluate(email)` without knowing which signal it is; signals call `provider.lookup_url(url)` without knowing which API they're talking to.
+
 **Provider layer separated from signal logic.**
 Each external API (VirusTotal, Gemini) is wrapped in a provider class that owns authentication, rate limiting, error handling, and response parsing. Signals receive clean result objects, not raw HTTP responses. This separation means a signal never handles a 429 error — it just receives `result.error` — and providers can be injected for testing.
 
@@ -299,20 +285,15 @@ The Gemini signal is not in the default scan path — it runs only when the user
 **Trump cards for high-confidence signals.**
 Some signals produce binary, definitive evidence. An attachment named `invoice.pdf.exe` is not merely suspicious — it is almost certainly malicious regardless of what other signals say. Treating these as additive contributors risks under-scoring them when other signals are quiet. Trump cards short-circuit the verdict to Malicious directly, which matches the actual risk and gives the user an unambiguous signal.
 
-**Public Suffix List adoption after a real false positive.**
-The lookalike domain signal originally used a naive "take the last two dot-separated labels" approach to extract the registrable domain. This caused a false positive: `mail.tel-aviv.gov.il` was flagged as resembling `hmrc.gov.uk` because both naively reduce to a two-label form with similar edit distance. Switching to `tldextract` (Mozilla PSL) correctly identifies `gov.il` and `gov.uk` as different suffixes, making cross-TLD comparisons impossible and eliminating the false positive class entirely.
-
 ---
 
 ## Known limitations
 
-- **Brand list is hand-curated.** The 25-brand registry in `brands.py` covers common targets but misses many. Adding brands requires a code change; there is no dynamic update mechanism.
-- **Lookalike detection is Levenshtein-only.** Homoglyph substitutions (е vs e, using Cyrillic), punycode domains, and semantic lookalikes (e.g., `paypal-security.com`) are not caught by edit distance.
+- **ngrok URL changes on restart.** The backend URL is hardcoded in `Code.js` and requires a `clasp push` every time ngrok restarts with a new URL. A stable backend hostname would remove this friction.
 - **Gemini API quota is low on the free tier.** The AI analysis button may return "temporarily unavailable" if the daily quota is exhausted. The free Gemini tier has no guaranteed capacity.
 - **No shared-secret authentication on the backend.** Any client that knows the ngrok URL can POST to `/scan`. A production deployment would need token-based authentication between the add-on and the backend.
 - **No persistent state.** Each scan is stateless. There is no history, no per-user profile, and no feedback loop to improve signal weights over time.
-- **No automated unit tests.** The test suite (`tests_manual.sh`) is a set of curl-based integration tests that require the backend to be running. There are no pytest unit tests for individual signal logic.
-- **ngrok URL changes on restart.** The backend URL is hardcoded in `Code.js` and requires a `clasp push` every time ngrok restarts with a new URL. A stable backend hostname would remove this friction.
+- **Brand list is hand-curated.** The 25-brand registry in `brands.py` covers common targets but misses many. Adding brands requires a code change; there is no dynamic update mechanism.
 
 ---
 
