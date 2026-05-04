@@ -205,6 +205,10 @@ function buildCard(scanResult) {
   const triggerCount = triggeredSignals.length;
   const findingsWord = triggerCount === 1 ? 'finding' : 'findings';
 
+  const vtSignal = (scanResult.signals || []).find(s => s.name === 'threat_intel_url');
+  const vtRateLimited = vtSignal && !vtSignal.triggered &&
+    (vtSignal.metadata && vtSignal.metadata.errors || []).some(e => e.includes('Rate limit exceeded'));
+
   const card = CardService.newCardBuilder();
 
   // Section 1: Header row — verdict icon, colored verdict text, score
@@ -218,6 +222,16 @@ function buildCard(scanResult) {
           .setWrapText(true)
       )
   );
+
+  if (vtRateLimited) {
+    card.addSection(
+      CardService.newCardSection()
+        .addWidget(
+          CardService.newTextParagraph()
+            .setText('<font color="#f9a825" size="2">⚠ VirusTotal check skipped: rate limit reached</font>')
+        )
+    );
+  }
 
   // Section 2: Security Verdict
   card.addSection(
