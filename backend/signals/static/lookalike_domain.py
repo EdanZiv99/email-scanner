@@ -1,4 +1,5 @@
 """Lookalike domain signal: flags sender domains within edit distance 1-2 of known brand domains."""
+import tldextract
 from rapidfuzz.distance import Levenshtein
 
 from models import Email, SignalResult
@@ -11,17 +12,20 @@ from signals.utils import parse_from_header
 _MIN_DOMAIN_LEN = 5  # short domains (e.g. "ups.com") hit too many unrelated matches at distance 2
 _MAX_DISTANCE = 2
 
+# Use bundled PSL snapshot — avoids network calls and makes behaviour deterministic.
+_extractor = tldextract.TLDExtract(suffix_list_urls=())
 
-def _registrable_part(domain: str) -> str:
-    """Return the registrable domain (last 2 labels, e.g. 'mail.paypal.com' → 'paypal.com').
 
-    Limitation: this naive split does not handle public-suffix edge cases like
-    'co.uk' — 'bank.co.uk' would be returned as-is rather than trimmed further.
+def _registrable(domain: str):
+    """Return (registrable_domain, suffix) using the public suffix list.
+
+    Returns ("", "") for malformed or unrecognised inputs.
+    tldextract v5: TLDExtract instances are callable, not .extract().
     """
-    parts = domain.split(".")
-    if len(parts) > 2:
-        return ".".join(parts[-2:])
-    return domain
+    ext = _extractor(domain.lower())
+    if not ext.domain or not ext.suffix:
+        return "", ""
+    return f"{ext.domain}.{ext.suffix}", ext.suffix
 
 
 class LookalikeDomainSignal(Signal):
@@ -41,7 +45,7 @@ class LookalikeDomainSignal(Signal):
                 explanation="Sender domain could not be extracted",
             )
 
-        candidate = _registrable_part(sender_domain.lower())
+        sender_registrable, sender_suffix = _registrable(sender_domain)
 
         best_distance = None
         best_legit = None
@@ -57,12 +61,20 @@ class LookalikeDomainSignal(Signal):
                         explanation=f"Sender domain {sender_domain} is a legitimate domain for {brand['name']}",
                     )
 
-                legit_candidate = _registrable_part(legit.lower())
+                legit_registrable, legit_suffix = _registrable(legit)
 
-                if len(candidate) < _MIN_DOMAIN_LEN or len(legit_candidate) < _MIN_DOMAIN_LEN:
+                if not sender_registrable or not legit_registrable:
                     continue
 
-                distance = Levenshtein.distance(candidate, legit_candidate)
+                # Different public suffixes (e.g. .gov.il vs .gov.uk) cannot be lookalikes —
+                # they are under entirely different TLD trees.
+                if sender_suffix != legit_suffix:
+                    continue
+
+                if len(sender_registrable) < _MIN_DOMAIN_LEN or len(legit_registrable) < _MIN_DOMAIN_LEN:
+                    continue
+
+                distance = Levenshtein.distance(sender_registrable, legit_registrable)
 
                 if 1 <= distance <= _MAX_DISTANCE:
                     if best_distance is None or distance < best_distance:

@@ -1,5 +1,6 @@
 flask
 rapidfuzz
 requests
+tldextract
 google-genai
 python-dotenv

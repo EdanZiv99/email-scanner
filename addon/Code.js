@@ -300,13 +300,11 @@ function buildCard(scanResult) {
       )
   );
 
-  // Section 5: Analysis Breakdown
+  // Section 5: Analysis Breakdown (collapsible, starts collapsed)
   const findingsSection = CardService.newCardSection()
-    .addWidget(
-      CardService.newDecoratedText()
-        .setIconUrl(MATERIAL_ICONS.search)
-        .setText(`<b>ANALYSIS BREAKDOWN (${triggerCount} ${findingsWord})</b>`)
-    );
+    .setHeader(`<b>ANALYSIS BREAKDOWN (${triggerCount} ${findingsWord})</b>`)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(0);
 
   if (triggerCount > 0) {
     triggeredSignals.forEach(signal => {
