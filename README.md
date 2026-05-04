@@ -1,4 +1,4 @@
-# Email Maliciousness Scorer
+# Email Scanner
 
 A Gmail Add-on that analyzes the open email in real time and returns a maliciousness verdict, risk score, and recommended action.
 
