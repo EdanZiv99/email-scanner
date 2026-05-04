@@ -211,16 +211,6 @@ clasp push
 
 Open Gmail, find the add-on in the sidebar, and open any email to run a scan.
 
-### 5. Running the test suite
-
-With the Flask backend running:
-
-```bash
-cd email-scorer
-bash backend/tests_manual.sh
-```
-
-All 24 tests should pass.
 
 ---
 
@@ -238,7 +228,6 @@ email-scorer/
 │   ├── orchestrator.py              # Signal runner; on-demand LLM entry point
 │   ├── scoring.py                   # Additive scoring, trump cards, verdict mapping
 │   ├── requirements.txt             # Python dependencies
-│   ├── tests_manual.sh              # Integration test suite (24 tests)
 │   ├── .env.example                 # Environment variable template
 │   ├── providers/
 │   │   ├── base.py                  # ThreatIntelProvider abstract interface
@@ -302,7 +291,6 @@ Some signals produce binary, definitive evidence. An attachment named `invoice.p
 - **Cloud Run or Fly.io deployment** with a stable HTTPS endpoint, eliminating the ngrok dependency for demos.
 - **Shared-secret authentication** between add-on and backend (a pre-shared token sent in an HTTP header, verified on every request).
 - **Additional signals**: WHOIS domain age (newly registered domains are a strong phishing signal), EmailRep.io sender reputation, Google Safe Browsing API for URL lookup, and file hash lookup against known-malicious databases.
-- **Automated unit tests** for each signal using pytest and injected mock providers, with a CI step that runs on every push.
 - **Dynamic brand registry** loaded from a configuration file or remote source, without requiring a code deployment to add brands.
 - **Feedback mechanism**: a thumbs up/down on the card verdict, logged to a simple store, to capture false positives and false negatives for future signal tuning.
 - **Homoglyph and punycode detection** in the lookalike domain signal to catch Unicode-based domain spoofing.
