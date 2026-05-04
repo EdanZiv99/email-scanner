@@ -289,8 +289,19 @@ Some signals produce binary, definitive evidence. An attachment named `invoice.p
 ## Future improvements
 
 - **Cloud Run or Fly.io deployment** with a stable HTTPS endpoint, eliminating the ngrok dependency for demos.
-- **Shared-secret authentication** between add-on and backend (a pre-shared token sent in an HTTP header, verified on every request).
 - **Additional signals**: WHOIS domain age (newly registered domains are a strong phishing signal), EmailRep.io sender reputation, Google Safe Browsing API for URL lookup, and file hash lookup against known-malicious databases.
 - **Dynamic brand registry** loaded from a configuration file or remote source, without requiring a code deployment to add brands.
 - **Feedback mechanism**: a thumbs up/down on the card verdict, logged to a simple store, to capture false positives and false negatives for future signal tuning.
-- **Homoglyph and punycode detection** in the lookalike domain signal to catch Unicode-based domain spoofing.
+- **Shared-secret authentication** between add-on and backend (a pre-shared token sent in an HTTP header, verified on every request).
+- **Additional signals**:
+  - **Threat intel scanning for attachment hashes** — check SHA-256 hashes of attachments against VirusTotal or another malware reputation provider. The current add-on already sends attachment metadata and hashes only, but the MVP does not yet perform full file-hash reputation lookups.
+  - **WHOIS / RDAP domain age** — detect newly registered sender domains, which are often used in phishing campaigns. This was deferred because it requires network calls, timeout handling, and graceful degradation.
+  - **Email sender reputation** — integrate a provider such as EmailRep.io to identify senders with a known abuse history, suspicious reputation, or recent first-seen date.
+  - **Google Safe Browsing URL reputation** — add another URL intelligence source alongside VirusTotal to improve URL coverage and reduce dependence on a single external provider.
+  - **IP reputation checks** — analyze sending infrastructure reputation when a reliable originating IP can be extracted from email headers. This was deferred because Gmail `Received` headers can be difficult to interpret reliably.
+  - **Mailed-by / signed-by consistency** — compare authentication-related domains with the visible `From` domain to catch suspicious sender alignment issues beyond DMARC.
+  - **Shortened URL detection** — flag links that use URL shorteners such as bit.ly or tinyurl. This is a weak signal and would need low weight to avoid false positives.
+  - **Sender history with recipient** — use prior correspondence history as a trust signal. This was deferred because it requires broader Gmail permissions and introduces privacy and performance concerns.
+  - **Image-based phishing detection** — analyze inline images or screenshots for phishing content that may not appear in the email text.
+  - **Sandbox detonation for unknown attachments** — execute or inspect suspicious files in a sandbox to detect novel malware that hash-based scanning misses.
+

@@ -77,7 +77,7 @@ class GeminiAnalysisSignal(Signal):
 
         return self._make_result(
             triggered=True,
-            explanation=f"AI analysis: {result.explanation}",
+            explanation=f"{result.explanation}",
             metadata={
                 "verdict": result.verdict,
                 "confidence": result.confidence,
