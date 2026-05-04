@@ -1,4 +1,7 @@
 """Flask entry point. Handles /scan (POST) and /health (GET) endpoints."""
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, request, jsonify
 
 from models import Email
