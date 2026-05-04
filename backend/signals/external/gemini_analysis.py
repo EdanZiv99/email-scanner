@@ -18,7 +18,7 @@ class GeminiAnalysisSignal(Signal):
 
     # Maps (verdict, confidence) → (weight, trump_card).
     # suspicious/low and all safe cases produce weight=0 (not triggered).
-    # malicious/high is the only trump — overwhelming LLM confidence in a clear threat.
+    # No trump card — high weight (45) is sufficient; the LLM alone should not force a verdict.
     WEIGHT_TABLE = {
         ("safe",       "low"):    (0,  False),
         ("safe",       "medium"): (0,  False),

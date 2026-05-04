@@ -38,8 +38,9 @@ def _dynamic_weight(malicious_count: int) -> int:
 
 
 def _is_trump(malicious_count: int) -> bool:
-    # 10+ vendors is overwhelming consensus — no reasonable scoring outcome should yield "Safe".
-    return malicious_count >= 10
+    # 6+ vendors is broad consensus and already the threshold for maximum weight — no
+    # reasonable scoring outcome should yield anything below Malicious at this point.
+    return malicious_count >= 6
 
 
 class ThreatIntelUrlSignal(Signal):
