@@ -184,6 +184,7 @@ python app.py
 ```bash
 # In a separate terminal
 ngrok http 8080
+
 # Copy the https:// forwarding URL (e.g. https://abc123.ngrok-free.app)
 ```
 
