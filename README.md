@@ -218,7 +218,6 @@ cp addon/.clasp.json.example addon/.clasp.json
     # 5. Copy the `Script ID`
 
 # Open addon/.clasp.json and replace the placeholder scriptId with your Google Apps Script Script ID.
-# You can find it at: Google Apps Script (script.google.com) → Project Settings → Script ID):
 
 # Push the add-on code
 cd addon
