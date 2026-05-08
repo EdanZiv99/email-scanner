@@ -158,7 +158,7 @@ The add-on posts directly to the Flask backend over HTTPS (via ngrok in developm
 
 ```bash
 # Clone and enter the repo
-cd email-scorer
+cd email-scanner
 
 # Create and activate a virtual environment
 python -m venv backend/venv
@@ -203,6 +203,13 @@ npm install -g @google/clasp
 
 # Authenticate with your Google account
 clasp login
+
+# Configure the clasp deployment target
+cp addon/.clasp.json.example addon/.clasp.json
+
+# Edit addon/.clasp.json and fill in your Script ID
+#  "scriptId": "your-apps-script-project-id"
+# Find it at: Google Apps Script → Project Settings → Script ID):
 
 # Push the add-on code
 cd addon
