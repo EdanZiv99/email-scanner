@@ -152,6 +152,7 @@ The add-on posts directly to the Flask backend over HTTPS (via ngrok in developm
 - A Google account with Gmail
 - A [VirusTotal](https://www.virustotal.com) free API key
 - A [Google AI Studio](https://aistudio.google.com) API key (Gemini)
+- A Google Apps Script project for deploying the Gmail add-on
 - [ngrok](https://ngrok.com) account and CLI
 
 ### 1. Backend
@@ -207,9 +208,16 @@ clasp login
 # Configure the clasp deployment target
 cp addon/.clasp.json.example addon/.clasp.json
 
-# Edit addon/.clasp.json and fill in your Script ID
-#  "scriptId": "your-apps-script-project-id"
-# Find it at: Google Apps Script → Project Settings → Script ID):
+# Create a Google Apps Script project:
+
+    # 1. Go to `script.google.com`
+    # 2. Click `New project`
+    # 3. Rename it, for example: `email-scanner-addon`
+    # 4. Open `Project Settings`
+    # 5. Copy the `Script ID`
+
+# Open addon/.clasp.json and replace the placeholder scriptId with your Google Apps Script Script ID.
+# You can find it at: Google Apps Script (script.google.com) → Project Settings → Script ID):
 
 # Push the add-on code
 cd addon
