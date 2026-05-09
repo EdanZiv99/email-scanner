@@ -29,7 +29,7 @@ What makes the implementation distinctive:
    - A risk score out of 100.
    - A recommended action (e.g., "Do not interact with this email. Report to IT and delete.").
    - A collapsible **Analysis Breakdown** listing each triggered signal with its category, explanation, and point contribution.
-   - For Suspicious, High Risk, or Malicious emails: a **Run AI Analysis** button that triggers on-demand Gemini LLM analysis and updates the card with the AI's finding.
+   - A **Run AI Analysis** button that triggers on-demand Gemini LLM analysis and updates the card with the AI's finding.
    - When a known-malicious URL was flagged by VirusTotal: a **View VirusTotal Report** link.
 
 ---
@@ -304,7 +304,6 @@ Some signals produce binary, definitive evidence. An attachment named `invoice.p
 ## Future improvements
 
 - **Cloud Run or Fly.io deployment** with a stable HTTPS endpoint, eliminating the ngrok dependency for demos.
-- **Additional signals**: WHOIS domain age (newly registered domains are a strong phishing signal), EmailRep.io sender reputation, Google Safe Browsing API for URL lookup, and file hash lookup against known-malicious databases.
 - **Dynamic brand registry** loaded from a configuration file or remote source, without requiring a code deployment to add brands.
 - **Feedback mechanism**: a thumbs up/down on the card verdict, logged to a simple store, to capture false positives and false negatives for future signal tuning.
 - **Shared-secret authentication** between add-on and backend (a pre-shared token sent in an HTTP header, verified on every request).
